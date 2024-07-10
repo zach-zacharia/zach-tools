@@ -123,12 +123,14 @@
                         <div class="bg-secondary rounded p-4 align-items-center">
                             <form onsubmit="return submitForm();">
                                 <label for="ip">Enter IP Address:</label>
-                                <input type="text" id="ip" name="ip">
-                                <button type="submit">Scan Ports</button>
+                                <input type="text" class="form-control bg-dark border-0" id="ip" name="ip">
+                                <button class="bg-secondary rounded"type="submit">Scan Ports</button>
                             </form>
-                            <div id="scan-results">
-                                <!-- Scan results will be dynamically inserted here -->
-                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div id="scan-results">
+                            <!-- Scan results will be dynamically inserted here -->
                         </div>
                     </div>
                 </div>
