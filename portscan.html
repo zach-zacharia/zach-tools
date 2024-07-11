@@ -173,6 +173,40 @@
                 </div>
             </div>
 
+            <script>
+                $(document).ready(function() {
+                    // Handle form submission using jQuery
+                    $("#scanForm").submit(function(event) {
+                        event.preventDefault(); // Prevent default form submission
+        
+                        var ip = $("#ip").val(); // Get IP address from input field
+        
+                        // Perform AJAX POST request to /scan endpoint
+                        $.ajax({
+                            url: "/scan",
+                            method: "POST",
+                            data: { ip: ip },
+                            success: function(data) {
+                                // Update scan results dynamically
+                                $("#scanResults").html(`
+                                    <h2>Scan Results for IP: ${data.ip}</h2>
+                                    <pre>${data.results}</pre>
+                                `);
+        
+                                // Show download link
+                                $("#downloadLink").show();
+        
+                                // Update download link with proper URL
+                                $("#downloadButton").attr("href", data.download);
+                            },
+                            error: function(error) {
+                                console.error("Error:", error);
+                            }
+                        });
+                    });
+                });
+            </script>
+
 
             <!-- Footer Start -->
             <div class="container-fluid pt-4 px-4">
