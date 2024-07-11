@@ -13,14 +13,16 @@ import (
 func main() {
     r := gin.Default()
 
-    // Serve static files (CSS, JS, images, etc.)
-    r.Static("", "./")
+    // Serve static files from the root directory
+    r.GET("/", func(c *gin.Context) {
+        http.FileServer(http.Dir(".")).ServeHTTP(c.Writer, c.Request)
+    })
 
     // Load HTML templates from the templates directory
     r.LoadHTMLGlob("*.html")
 
     // Route to serve the main HTML template
-    r.GET("/", func(c *gin.Context) {
+    r.GET("/portscan", func(c *gin.Context) {
         c.HTML(http.StatusOK, "portscan.html", nil)
     })
 
