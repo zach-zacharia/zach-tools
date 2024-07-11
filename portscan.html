@@ -33,7 +33,39 @@
             return false; // Prevent default form submission
         }
     </script>
+    <script>
+        $(document).ready(function() {
+            // Handle form submission using jQuery
+            $("#scanForm").submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
 
+                var ip = $("#ip").val(); // Get IP address from input field
+
+                // Perform AJAX POST request to /scan endpoint
+                $.ajax({
+                    url: "/scan",
+                    method: "POST",
+                    data: { ip: ip },
+                    success: function(data) {
+                        // Update scan results dynamically
+                        $("#scanResults").html(`
+                            <h2>Scan Results for IP: ${data.ip}</h2>
+                            <pre>${data.results}</pre>
+                        `);
+
+                        // Show download link
+                        $("#downloadLink").show();
+
+                        // Update download link with proper URL
+                        $("#downloadButton").attr("href", data.download);
+                    },
+                    error: function(error) {
+                        console.error("Error:", error);
+                    }
+                });
+            });
+        });
+    </script>
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
 
@@ -132,6 +164,9 @@
                         <div class="bg-secondary rounded p-4 align-items-center">
                             <div id="scan-results">
                                 <!-- Scan results will be dynamically inserted here -->
+                            </div>
+                            <div id="downloadLink" style="display: none;">
+                                <a id="downloadButton" href="#" class="btn btn-primary">Download Scan Results</a>
                             </div>
                         </div>
                     </div>
