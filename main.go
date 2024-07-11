@@ -103,7 +103,7 @@ func main() {
     })
 
     // Run the server
-    r.Run(":6000")
+    r.Run(":8080")
 }
 
 // Function to write content to a file
