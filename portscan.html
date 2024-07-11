@@ -20,7 +20,7 @@
             .then(response => response.json())
             .then(data => {
                 // Update DOM with scan results
-                var resultsDiv = document.getElementById("scan-results");
+                var resultsDiv = document.getElementById("scanResults");
                 resultsDiv.innerHTML = `
                     <h3>Scan Results for IP: ${data.ip}</h3>
                     <pre>${data.results}</pre>
