@@ -14,7 +14,7 @@ func main() {
     r := gin.Default()
 
     // Serve static files (CSS, JS, images, etc.)
-    r.Static("/download", "./download*")
+    r.Static("", "./")
 
     // Load HTML templates from the templates directory
     r.LoadHTMLGlob("*.html")
