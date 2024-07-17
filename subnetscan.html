@@ -7,32 +7,6 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
-    <script>
-        function submitForm() {
-            var ip = document.getElementById("ip").value;
-            var formData = new FormData();
-            formData.append("ip", ip);
-
-            fetch("/subnet", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Update DOM with scan results
-                var resultsDiv = document.getElementById("scanResults");
-                resultsDiv.innerHTML = `
-                    <h3>Scan Results for IP: ${data.ip}</h3>
-                    <pre>${data.results}</pre>
-                `;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-            
-            return false; // Prevent default form submission
-        }
-    </script>
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
 

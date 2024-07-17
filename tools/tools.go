@@ -111,10 +111,11 @@ func Portscan() {
 func Subnetscan() {
 	router := gin.Default()
 
-	// Serve static files from the root directory
 	router.GET("/", func(c *gin.Context) {
 		http.FileServer(http.Dir(".")).ServeHTTP(c.Writer, c.Request)
 	})
+	// Load HTML templates from the templates directory
+	router.LoadHTMLGlob("*.html")
 
 	// Route to serve the main HTML template
 	router.GET("/subnet", func(c *gin.Context) {
