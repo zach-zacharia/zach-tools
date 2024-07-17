@@ -167,7 +167,7 @@ func Subnetscan() {
 	}
 	router.Run(":" + port)
 
-	func CalculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
+	func (CalculateBroadcastAddress(network net.IP, subnetMask net.IPMask)) net.IP {
 		broadcast := make(net.IP, len(network))
 		for i := range network {
 			broadcast[i] = network[i] | ^subnetMask[i]
@@ -175,7 +175,7 @@ func Subnetscan() {
 		return broadcast
 	}
 	
-	func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
+	func (CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP)) {
 		firstIP = make(net.IP, len(network))
 		lastIP = make(net.IP, len(network))
 	
