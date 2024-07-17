@@ -1,7 +1,7 @@
 package main
 
 import (
-	"tools/tools"
+	"./tools/tools"
 )
 
 func main() {
