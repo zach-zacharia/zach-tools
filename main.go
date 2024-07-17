@@ -94,17 +94,17 @@ import (
     }
 
     func subnetscan() {
-        r := gin.Default()
+        router := gin.Default()
 
 
     
         // Serve static files from the root directory
-        r.GET("/", func(c *gin.Context) {
+        router.GET("/", func(c *gin.Context) {
             http.FileServer(http.Dir(".")).ServeHTTP(c.Writer, c.Request)
         })
 
         // Route to serve the main HTML template
-        r.GET("/subnet", func(c *gin.Context) {
+        router.GET("/subnet", func(c *gin.Context) {
             c.HTML(http.StatusOK, "subnetscan.html", nil)
         })
     
