@@ -149,20 +149,35 @@ import (
         router.Run(":" + port)
     }
     
+    func calculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
+        firstIP = make(net.IP, len(network))
+        lastIP = make(net.IP, len(network))
+    
+        copy(firstIP, network)
+        copy(lastIP, broadcast)
+    
+        // Increment the last octet of firstIP for the first valid host
+        firstIP[3]++
+    
+        // Decrement the last octet of lastIP for the last valid host
+        lastIP[3]--
+    
+        return firstIP, lastIP
+    }
 
 
 
 // Function to write content to a file
-func writeToFile(fileName, content string) error {
-    file, err := os.Create(fileName)
-    if err != nil {
-        return err
-    }
-    defer file.Close()
+    func writeToFile(fileName, content string) error {
+        file, err := os.Create(fileName)
+        if err != nil {
+            return err
+        }
+        defer file.Close()
 
-    _, err = file.WriteString(content)
-    if err != nil {
-        return err
+        _, err = file.WriteString(content)
+        if err != nil {
+            return err
+        }
+        return nil
     }
-    return nil
-}
