@@ -9,6 +9,7 @@ import (
     "time"
 	"os"
 )
+func main() {
 
     func portscan() {
         r := gin.Default()
@@ -189,3 +190,4 @@ import (
         }
         return nil
     }
+}
