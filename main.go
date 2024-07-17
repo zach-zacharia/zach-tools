@@ -165,6 +165,14 @@ import (
         return firstIP, lastIP
     }
 
+    func calculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
+        broadcast := make(net.IP, len(network))
+        for i := range network {
+            broadcast[i] = network[i] | ^subnetMask[i]
+        }
+        return broadcast
+    }
+
 
 
 // Function to write content to a file
