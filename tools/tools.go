@@ -109,91 +109,91 @@ func portscan() {
     // Run the server
     r.Run(":8080")
 }
-// func subnetscan() {
-//     router := gin.Default()
+func subnetscan() {
+    router := gin.Default()
 
 
 
-//     // Serve static files from the root directory
-//     router.GET("/", func(c *gin.Context) {
-//         http.FileServer(http.Dir(".")).ServeHTTP(c.Writer, c.Request)
-//     })
+    // Serve static files from the root directory
+    router.GET("/", func(c *gin.Context) {
+        http.FileServer(http.Dir(".")).ServeHTTP(c.Writer, c.Request)
+    })
 
-//     // Route to serve the main HTML template
-//     router.GET("/subnet", func(c *gin.Context) {
-//         c.HTML(http.StatusOK, "subnetscan.html", nil)
-//     })
+    // Route to serve the main HTML template
+    router.GET("/subnet", func(c *gin.Context) {
+        c.HTML(http.StatusOK, "subnetscan.html", nil)
+    })
 
-//     // Handle subnet calculation
-//     router.POST("/subnet", func(c *gin.Context) {
-//         ip := c.PostForm("ip")
+    // Handle subnet calculation
+    router.POST("/subnet", func(c *gin.Context) {
+        ip := c.PostForm("ip")
 
-//         if ip == "" {
-//             c.JSON(http.StatusBadRequest, gin.H{
-//                 "Error": "IP address is required",
-//             })
-//             return
-//         }
+        if ip == "" {
+            c.JSON(http.StatusBadRequest, gin.H{
+                "Error": "IP address is required",
+            })
+            return
+        }
 
-//         // Assume a default subnet mask (e.g., /24)
-//         subnetMask := "24"
+        // Assume a default subnet mask (e.g., /24)
+        subnetMask := "24"
 
-//         _, subnet, err := net.ParseCIDR(ip + "/" + subnetMask)
-//         if err != nil {
-//             c.JSON(http.StatusBadRequest, gin.H{
-//                 "Error": "Invalid IP address or subnet mask: " + err.Error(),
-//             })
-//             return
-//         }
+        _, subnet, err := net.ParseCIDR(ip + "/" + subnetMask)
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{
+                "Error": "Invalid IP address or subnet mask: " + err.Error(),
+            })
+            return
+        }
 
-//         network := subnet.IP
-//         broadcast := calculateBroadcastAddress(network, subnet.Mask)
-//         firstIP, lastIP := calculateFirstLastIP(network, broadcast)
+        network := subnet.IP
+        broadcast := calculateBroadcastAddress(network, subnet.Mask)
+        firstIP, lastIP := calculateFirstLastIP(network, broadcast)
 
-//         // Prepare JSON response
-//         response := gin.H{
-//             "IP":               ip,
-//             "SubnetMask":       subnetMask,
-//             "NetworkAddress":   network.String(),
-//             "BroadcastAddress": broadcast.String(),
-//             "FirstValidIP":     firstIP.String(),
-//             "LastValidIP":      lastIP.String(),
-//         }
+        // Prepare JSON response
+        response := gin.H{
+            "IP":               ip,
+            "SubnetMask":       subnetMask,
+            "NetworkAddress":   network.String(),
+            "BroadcastAddress": broadcast.String(),
+            "FirstValidIP":     firstIP.String(),
+            "LastValidIP":      lastIP.String(),
+        }
 
-//         c.JSON(http.StatusOK, response)
-//     })
+        c.JSON(http.StatusOK, response)
+    })
 
-//     // Run the server
-//     port := os.Getenv("PORT")
-//     if port == "" {
-//         port = "8090" // Default to port 8090 if not specified
-//     }
-//     router.Run(":" + port)
-// }
+    // Run the server
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8090" // Default to port 8090 if not specified
+    }
+    router.Run(":" + port)
+}
 
-// func calculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
-//     broadcast := make(net.IP, len(network))
-//     for i := range network {
-//         broadcast[i] = network[i] | ^subnetMask[i]
-//     }
-//     return broadcast
-// }
+func calculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
+    broadcast := make(net.IP, len(network))
+    for i := range network {
+        broadcast[i] = network[i] | ^subnetMask[i]
+    }
+    return broadcast
+}
 
-// func calculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
-//     firstIP = make(net.IP, len(network))
-//     lastIP = make(net.IP, len(network))
+func calculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
+    firstIP = make(net.IP, len(network))
+    lastIP = make(net.IP, len(network))
 
-//     copy(firstIP, network)
-//     copy(lastIP, broadcast)
+    copy(firstIP, network)
+    copy(lastIP, broadcast)
 
-//     // Increment the last octet of firstIP for the first valid host
-//     firstIP[3]++
+    // Increment the last octet of firstIP for the first valid host
+    firstIP[3]++
 
-//     // Decrement the last octet of lastIP for the last valid host
-//     lastIP[3]--
+    // Decrement the last octet of lastIP for the last valid host
+    lastIP[3]--
 
-//     return firstIP, lastIP
-// }
+    return firstIP, lastIP
+}
 
 
 
