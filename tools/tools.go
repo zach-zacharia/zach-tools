@@ -121,10 +121,9 @@ func Subnetscan() {
 	router.GET("/subnetscan", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "subnetscan.html", nil)
 	})
-
-	// Handle subnet calculation
 	router.POST("/subnet", func(c *gin.Context) {
-		ip := c.PostForm("ip")
+		var target string
+		target = c.PostForm("ip")
 
 		if ip == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
