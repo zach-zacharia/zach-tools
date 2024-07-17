@@ -8,7 +8,6 @@ import (
     "sync"
     "time"
 	"os"
-    "strconv"
 )
 
     func portscan() {
