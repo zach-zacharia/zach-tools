@@ -120,25 +120,52 @@
                 <div class="row g-4">
                     <div class="col-sm-6">
                         <div class="bg-secondary rounded p-4 align-items-center">
-                            <form action="/subnet" method="POST">
+                            <form id="subnetForm">
                                 <label for="ip">IP Address:</label>
                                 <input type="text" id="ip" name="ip" required><br><br>
-                                
-                                <label for="subnet_mask">Subnet Mask (optional):</label>
-                                <input type="text" id="subnet_mask" name="subnet_mask"><br><br>
-                                
                                 <button type="submit">Submit</button>
                             </form>
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="bg-secondary rounded p-4 align-items-center">
-                            <div id="scanResults">
-                                <!-- Scan results will be dynamically inserted here -->
-                            </div>
-                            <div id="downloadLink">
-                                <a id="downloadButton" href="#" class="btn btn-primary">Download Scan Results</a>
-                            </div>
+                        <div class="bg-secondary rounded p-4 align-items-center">                           
+                                <div id="results">
+                                    <!-- Results will be displayed here -->
+                                </div>
+                            <!-- Include jQuery for AJAX -->
+                            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                            <script>
+                                $(document).ready(function() {
+                                    $('#subnetForm').submit(function(event) {
+                                        event.preventDefault(); // Prevent the form from submitting normally
+
+                                        var formData = $(this).serialize(); // Serialize form data
+
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: '/subnet', // Endpoint to handle the POST request
+                                            data: formData,
+                                            success: function(response) {
+                                                // Update HTML to display results
+                                                $('#results').html(`
+                                                    <h2>Subnet Details</h2>
+                                                    <p><strong>IP:</strong> ${response.IP}</p>
+                                                    <p><strong>Subnet Mask:</strong> ${response.SubnetMask}</p>
+                                                    <p><strong>Network Address:</strong> ${response.NetworkAddress}</p>
+                                                    <p><strong>Broadcast Address:</strong> ${response.BroadcastAddress}</p>
+                                                    <p><strong>First Valid IP:</strong> ${response.FirstValidIP}</p>
+                                                    <p><strong>Last Valid IP:</strong> ${response.LastValidIP}</p>
+                                                `);
+                                            },
+                                            error: function(error) {
+                                                // Handle errors (if any)
+                                                console.error('Error:', error);
+                                                $('#results').html('<p>Error fetching subnet details.</p>');
+                                            }
+                                        });
+                                    });
+                                });
+                            </script>
                         </div>
                     </div>
                 </div>
