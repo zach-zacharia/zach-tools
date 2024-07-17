@@ -28,6 +28,32 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <script>
+        function submitForm() {
+            var ip = document.getElementById("ip").value;
+            var formData = new FormData();
+            formData.append("ip", ip);
+
+            fetch("/subnet", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update DOM with scan results
+                var resultsDiv = document.getElementById("scanResults");
+                resultsDiv.innerHTML = `
+                    <h3>Scan Results for IP: ${data.ip}</h3>
+                    <pre>${data.results}</pre>
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            
+            return false; // Prevent default form submission
+        }
+    </script>
 </head>
 
 <body>
@@ -94,10 +120,10 @@
                 <div class="row g-4">
                     <div class="col-sm-6">
                         <div class="bg-secondary rounded p-4 align-items-center">
-                            <form id="subnetForm">
-                                <label for="ip">IP Address:</label>
-                                <input type="text" id="ip" name="ip" required><br><br>
-                                <button type="submit">Submit</button>
+                            <form onsubmit="return submitForm();">
+                                <label for="ip">Enter IP Address:</label>
+                                <input type="text" class="form-control bg-dark border-0" id="ip" name="ip">
+                                <button class="bg-red rounded border-0" type="submit">Scan Subnets</button>
                             </form>
                         </div>
                     </div>
@@ -106,35 +132,34 @@
                                 <div id="results">
                                     <!-- Results will be displayed here -->
                                 </div>
-                            <!-- Include jQuery for AJAX -->
-                            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                             <script>
                                 $(document).ready(function() {
-                                    $('#subnetForm').submit(function(event) {
-                                        event.preventDefault(); // Prevent the form from submitting normally
-
-                                        var formData = $(this).serialize(); // Serialize form data
-
+                                    // Handle form submission using jQuery
+                                    $("#scanForm").submit(function(event) {
+                                        event.preventDefault(); // Prevent default form submission
+                        
+                                        var ip = $("#ip").val(); // Get IP address from input field
+                        
+                                        // Perform AJAX POST request to /scan endpoint
                                         $.ajax({
-                                            type: 'POST',
-                                            url: '/subnetscan', // Endpoint to handle the POST request
-                                            data: formData,
-                                            success: function(response) {
-                                                // Update HTML to display results
-                                                $('#results').html(`
-                                                    <h2>Subnet Details</h2>
-                                                    <p><strong>IP:</strong> ${response.IP}</p>
-                                                    <p><strong>Subnet Mask:</strong> ${response.SubnetMask}</p>
-                                                    <p><strong>Network Address:</strong> ${response.NetworkAddress}</p>
-                                                    <p><strong>Broadcast Address:</strong> ${response.BroadcastAddress}</p>
-                                                    <p><strong>First Valid IP:</strong> ${response.FirstValidIP}</p>
-                                                    <p><strong>Last Valid IP:</strong> ${response.LastValidIP}</p>
+                                            url: "/subnet",
+                                            method: "POST",
+                                            data: { ip: ip },
+                                            success: function(data) {
+                                                // Update scan results dynamically
+                                                $("#scanResults").html(`
+                                                    <h2>Scan Results for IP: ${data.ip}</h2>
+                                                    <pre>${data.results}</pre>
                                                 `);
+                        
+                                                // Show download link
+                                                $("#downloadLink").show();
+                        
+                                                // Update download link with proper URL
+                                                $("#downloadButton").attr("href", data.download);
                                             },
                                             error: function(error) {
-                                                // Handle errors (if any)
-                                                console.error('Error:', error);
-                                                $('#results').html('<p>Error fetching subnet details.</p>');
+                                                console.error("Error:", error);
                                             }
                                         });
                                     });
