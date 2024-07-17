@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-    func portscan() {
+    func portscan() ({
         r := gin.Default()
 
         // Serve static files from the root directory
@@ -109,7 +109,7 @@ func main() {
 
         // Run the server
         r.Run(":8080")
-    }
+    })
 }
 // func subnetscan() {
 //     router := gin.Default()
