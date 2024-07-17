@@ -94,7 +94,9 @@ import (
     }
 
     func subnetscan() {
-        router := gin.Default()
+        r := gin.Default()
+
+
     
         // Serve static files from the root directory
         r.GET("/", func(c *gin.Context) {
