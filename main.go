@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	tools.Portscan()
+	// tools.Portscan()
 	tools.Subnetscan()
 }
