@@ -8,6 +8,7 @@ import (
     "sync"
     "time"
 	"os"
+    "strconv"
 )
 
     func portscan() {
@@ -92,24 +93,63 @@ import (
                 "download":   fmt.Sprintf("/download/%s", fileName), // Provide download URL
             })
         })
-
-        
-
-
-        // Endpoint for downloading scan results
-        r.GET("/download/:filename", func(c *gin.Context) {
-            fileName := c.Param("filename")
-
-            // Set headers for file download
-            c.Header("Content-Description", "File Transfer")
-            c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
-            c.Header("Content-Type", "application/octet-stream")
-            c.File(fileName)
-        })
-
-        // Run the server
-        r.Run(":8080")
     }
+
+    func subnetscan() {
+        router := gin.Default()
+    
+        // Serve HTML form at the root
+        router.GET("/", func(c *gin.Context) {
+            c.HTML(http.StatusOK, "subnetscan.html", nil)
+        })
+    
+        // Handle subnet calculation
+        router.POST("/subnet", func(c *gin.Context) {
+            ip := c.PostForm("ip")
+    
+            if ip == "" {
+                c.HTML(http.StatusBadRequest, "subnetscan.html", gin.H{
+                    "Error": "IP address is required",
+                })
+                return
+            }
+    
+            // Assume a default subnet mask (e.g., /24)
+            subnetMask := "24"
+    
+            _, subnet, err := net.ParseCIDR(ip + "/" + subnetMask)
+            if err != nil {
+                c.HTML(http.StatusBadRequest, "subnetscan.html", gin.H{
+                    "Error": "Invalid IP address or subnet mask: " + err.Error(),
+                })
+                return
+            }
+    
+            network := subnet.IP
+            broadcast := calculateBroadcastAddress(network, subnet.Mask)
+            firstIP, lastIP := calculateFirstLastIP(network, broadcast)
+    
+            c.HTML(http.StatusOK, "subnetscan.html", gin.H{
+                "IP":               ip,
+                "SubnetMask":       subnetMask,
+                "NetworkAddress":   network.String(),
+                "BroadcastAddress": broadcast.String(),
+                "FirstValidIP":     firstIP.String(),
+                "LastValidIP":      lastIP.String(),
+            })
+        })
+    
+        // Serve static files (CSS, JS, etc.)
+        router.Static("", "/")
+    
+        // Run the server
+        port := os.Getenv("PORT")
+        if port == "" {
+            port = "8090" // Default to port 8090 if not specified
+        }
+        router.Run(":" + port)
+    }
+    
 
 
 
