@@ -118,12 +118,12 @@ func Subnetscan() {
 	router.LoadHTMLGlob("*.html")
 
 	// Route to serve the main HTML template
-	router.GET("/subnet", func(c *gin.Context) {
+	router.GET("/subnetscan", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "subnetscan.html", nil)
 	})
 
 	// Handle subnet calculation
-	router.POST("/subnetscan", func(c *gin.Context) {
+	router.POST("/subnet", func(c *gin.Context) {
 		ip := c.PostForm("ip")
 
 		if ip == "" {
