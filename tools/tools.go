@@ -163,7 +163,7 @@ func Subnetscan() {
 	// Run the server
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8090" // Default to port 8090 if not specified
+		port = "8080" // Default to port 8090 if not specified
 	}
 	router.Run(":" + port)
 }
