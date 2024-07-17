@@ -106,7 +106,7 @@ import (
             ip := c.PostForm("ip")
     
             if ip == "" {
-                c.HTML(http.StatusBadRequest, "subnetscan.html", gin.H{
+                c.JSON(http.StatusBadRequest, gin.H{
                     "Error": "IP address is required",
                 })
                 return
@@ -117,7 +117,7 @@ import (
     
             _, subnet, err := net.ParseCIDR(ip + "/" + subnetMask)
             if err != nil {
-                c.HTML(http.StatusBadRequest, "subnetscan.html", gin.H{
+                c.JSON(http.StatusBadRequest, gin.H{
                     "Error": "Invalid IP address or subnet mask: " + err.Error(),
                 })
                 return
@@ -127,18 +127,21 @@ import (
             broadcast := calculateBroadcastAddress(network, subnet.Mask)
             firstIP, lastIP := calculateFirstLastIP(network, broadcast)
     
-            c.HTML(http.StatusOK, "subnetscan.html", gin.H{
+            // Prepare JSON response
+            response := gin.H{
                 "IP":               ip,
                 "SubnetMask":       subnetMask,
                 "NetworkAddress":   network.String(),
                 "BroadcastAddress": broadcast.String(),
                 "FirstValidIP":     firstIP.String(),
                 "LastValidIP":      lastIP.String(),
-            })
+            }
+    
+            c.JSON(http.StatusOK, response)
         })
     
         // Serve static files (CSS, JS, etc.)
-        router.Static("", "/")
+        router.Static("/", "./static")
     
         // Run the server
         port := os.Getenv("PORT")
@@ -146,6 +149,14 @@ import (
             port = "8090" // Default to port 8090 if not specified
         }
         router.Run(":" + port)
+    }
+    
+    func calculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
+        broadcast := make(net.IP, len(network))
+        for i := range network {
+            broadcast[i] = network[i] | ^subnetMask[i]
+        }
+        return broadcast
     }
     
     func calculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
@@ -162,14 +173,6 @@ import (
         lastIP[3]--
     
         return firstIP, lastIP
-    }
-
-    func calculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
-        broadcast := make(net.IP, len(network))
-        for i := range network {
-            broadcast[i] = network[i] | ^subnetMask[i]
-        }
-        return broadcast
     }
 
 
