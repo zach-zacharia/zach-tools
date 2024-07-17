@@ -100,6 +100,7 @@ func main() {
             "ip":         target,
             "results":    results,
             "download":   fmt.Sprintf("/download/%s", fileName), // Provide download URL
+        }
     func portscan() {
         r := gin.Default()
 
