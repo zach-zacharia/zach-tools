@@ -9,16 +9,7 @@ import (
     "time"
 	"os"
 )
-package main
-import (
-    "fmt"
-    "github.com/gin-gonic/gin"
-    "net"
-    "net/http"
-    "sync"
-    "time"
-	"os"
-)
+
 
 func portscan() {
     r := gin.Default()
