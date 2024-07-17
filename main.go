@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func portscan() {
+func main() {
     r := gin.Default()
 
     // Serve static files from the root directory
