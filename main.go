@@ -9,9 +9,7 @@ import (
     "time"
 	"os"
 )
-func main() {
-
-    func portscan() {
+    func main() {
         r := gin.Default()
 
         // Serve static files from the root directory
@@ -190,4 +188,3 @@ func main() {
         }
         return nil
     }
-}
