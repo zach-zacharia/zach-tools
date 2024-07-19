@@ -193,17 +193,17 @@ func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
 	return firstIP, lastIP
 }
 
-// Function to write content to a file
-func WriteToFile(fileName, content string) error {
-	file, err := os.Create(fileName)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
+// // Function to write content to a file
+// func WriteToFile(fileName, content string) error {
+// 	file, err := os.Create(fileName)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer file.Close()
 
-	_, err = file.WriteString(content)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// 	_, err = file.WriteString(content)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
