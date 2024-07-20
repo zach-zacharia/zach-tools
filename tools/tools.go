@@ -75,15 +75,15 @@ func Portscan() {
 		results += fmt.Sprintf("Closed Ports: %d\n", len(closedPorts))
 
 		// Generate a unique filename for the text file
-		// fileName := fmt.Sprintf("scan_results_%s.txt", target)
+		fileName := fmt.Sprintf("scan_results_%s.txt", target)
 
-		// // Write scan results to a text file
-		// err := WriteToFile(fileName, results)
-		// if err != nil {
-		// 	fmt.Println("Error writing to file:", err)
-		// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write file"})
-		// 	return
-		// }
+		// Write scan results to a text file
+		err := WriteToFile(fileName, results)
+		if err != nil {
+			fmt.Println("Error writing to file:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write file"})
+			return
+		}
 
 		// Send results as JSON including download URL
 		c.JSON(http.StatusOK, gin.H{
@@ -193,17 +193,17 @@ func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
 	return firstIP, lastIP
 }
 
-// // Function to write content to a file
-// func WriteToFile(fileName, content string) error {
-// 	file, err := os.Create(fileName)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer file.Close()
+// Function to write content to a file
+func WriteToFile(fileName, content string) error {
+	file, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-// 	_, err = file.WriteString(content)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+	_, err = file.WriteString(content)
+	if err != nil {
+		return err
+	}
+	return nil
+}
