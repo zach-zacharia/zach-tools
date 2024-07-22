@@ -4,9 +4,9 @@
     <title>Portscanner</title>
     <script>
         function submitForm() {
-            var ip = document.getElementById("portscanip").value;
+            var portscanip = document.getElementById("portscanip").value;
             var formData = new FormData();
-            formData.append("portscanip", ip);
+            formData.append("portscanip", portscanip);
 
             fetch("/scanport", {
                 method: "POST",
