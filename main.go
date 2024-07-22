@@ -1,10 +1,24 @@
 package main
 
 import (
-	"ztools/tools"
+	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"sync"
+	"time"
+	"github.com/git-gonic/gin"
 )
 
 func main() {
-	go tools.Portscan()
-	tools.Subnetscan()
+
+}
+
+func PortScan() {
+	router := gin.Default()
+	router.LoadHTMLGlob("templates/*")
+}
+
+func SubnetScan() {
+
 }
