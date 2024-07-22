@@ -32,6 +32,10 @@ func main() {
 		c.HTML(http.StatusOK, "subnetscan.html", nil)
 	})
 
+	server.GET("/webshell", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "webshell.html", nil)
+	})
+
 	server.GET("/ambatukam", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "test.html", nil)
 	})
@@ -89,5 +93,67 @@ func main() {
 		})
 	})
 
+	server.POST("/scansubnet", func(c *gin.Context) {
+		ip := c.PostForm("subnetscanip")
+
+		if ip == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"Error": "IP address is required",
+			})
+			return
+		}
+
+		// Assume a default subnet mask (e.g., /24)
+		subnetMask := "24"
+
+		_, subnet, err := net.ParseCIDR(ip + "/" + subnetMask)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"Error": "Invalid IP address or subnet mask: " + err.Error(),
+			})
+			return
+		}
+
+		network := subnet.IP
+		broadcast := CalculateBroadcastAddress(network, subnet.Mask)
+		firstIP, lastIP := CalculateFirstLastIP(network, broadcast)
+
+		// Prepare JSON response
+		response := gin.H{
+			"IP":               ip,
+			"SubnetMask":       subnetMask,
+			"NetworkAddress":   network.String(),
+			"BroadcastAddress": broadcast.String(),
+			"FirstValidIP":     firstIP.String(),
+			"LastValidIP":      lastIP.String(),
+		}
+
+		c.JSON(http.StatusOK, response)
+	})
+
 	server.Run(":4000")
+}
+
+func CalculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
+	broadcast := make(net.IP, len(network))
+	for i := range network {
+		broadcast[i] = network[i] | ^subnetMask[i]
+	}
+	return broadcast
+}
+
+func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
+	firstIP = make(net.IP, len(network))
+	lastIP = make(net.IP, len(network))
+
+	copy(firstIP, network)
+	copy(lastIP, broadcast)
+
+	// Increment the last octet of firstIP for the first valid host
+	firstIP[3]++
+
+	// Decrement the last octet of lastIP for the last valid host
+	lastIP[3]--
+
+	return firstIP, lastIP
 }
