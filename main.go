@@ -13,6 +13,11 @@ import (
 func main() {
 	server := gin.Default()
 
+	server.Static("/css", "./css")
+	server.Static("/img", "./img")
+	server.Static("/js", "./js")
+	server.Static("/lib", "./lib")
+	server.Static("/scss", "./scss")
 	server.LoadHTMLGlob("static/*.html")
 
 	server.GET("/", func(c *gin.Context) {
