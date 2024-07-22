@@ -1,24 +1,34 @@
 package main
 
 import (
-	"fmt"
-	"net"
+	// "fmt"
+	// "net/http"
+
 	"net/http"
-	"os"
-	"sync"
-	"time"
-	"github.com/git-gonic/gin"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	server := gin.Default()
 
-}
+	server.LoadHTMLGlob("static/*.html")
 
-func PortScan() {
-	router := gin.Default()
-	router.LoadHTMLGlob("templates/*")
-}
+	server.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 
-func SubnetScan() {
+	server.GET("/portscanner", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "portscan.html", nil)
+	})
 
+	server.GET("/subnetscanner", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "subnetscan.html", nil)
+	})
+
+	server.GET("/ambatukam", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "test.html", nil)
+	})
+
+	server.Run(":4000")
 }
