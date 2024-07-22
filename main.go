@@ -33,7 +33,7 @@ func main() {
 
 	server.POST("/scanport", func(c *gin.Context) {
 		// var target string
-		target := c.PostForm("ip")
+		target := c.PostForm("portscanip")
 
 		fmt.Printf("Scanning ports for target %s\n", target)
 
