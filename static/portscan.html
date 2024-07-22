@@ -2,11 +2,47 @@
 <html>
 <head>
     <title>Portscanner</title>
+    <script>
+        function submitForm() {
+            var ip = document.getElementById("ip").value;
+            var formData = new FormData();
+            formData.append("ip", ip);
+
+            fetch("/scanport", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update DOM with scan results
+                var resultsDiv = document.getElementById("portScanResult");
+                resultsDiv.innerHTML = `
+                    <h3>Scan Results for IP: ${data.ip}</h3>
+                    <pre>${data.results}</pre>
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            
+            return false; // Prevent default form submission
+        }
+    </script>
 </head>
 <body>
     <h1>
         This is Portscanner
     </h1>
+    <div>
+        <form onsubmit="return submitForm();">
+            <label for="portscanip">Please enter the IP:</label><br>
+            <input type="text" id="portscanip" name="portscanip"><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <div id="portScanResult">
+        <!-- Scan results will be here -->
+    </div>
     <p>
         <a href="/">Go back</a> to the main page
     </p>
