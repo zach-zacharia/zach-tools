@@ -1,4 +1,4 @@
-module ztools
+module go-webtest
 
 go 1.22.4
 
