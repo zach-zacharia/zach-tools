@@ -106,6 +106,14 @@ func main() {
 
 		if subnetMask == "" {
 			subnetMask = "/24"
+		} else {
+			_, _, err := net.ParseCIDR(ip + subnetMask)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"Error": "Invalid subnet mask format: " + err.Error(),
+				})
+				return
+			}
 		}
 
 		// Assume a default subnet mask (e.g., /24)
