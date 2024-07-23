@@ -4,6 +4,28 @@
         <title>
             Test Page
         </title>
+        <script>
+            function submitForm() {
+                fetch("/wireconf", {
+                    method: "POST"
+                })
+                .then(response => response.json())
+                .then(data => {
+                // Update DOM with scan results
+                var resultsDiv = document.getElementById("results");
+                resultsDiv.innerHTML = `
+                    <h3>Keys:</h3>
+                    <p><strong>Public Key:</strong> ${data.pubkey}</p>
+                    <p><strong>Private Key:</strong> ${data.privkey}</p>
+                `;
+            })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+                
+                return false; // Prevent default form submission
+            }
+        </script>
     </head>
     <body>
         <p>
@@ -12,5 +34,13 @@
         <p>
             <img src="/img/dreamybull-ambatukam.gif" alt="dreamybull-ambatukam">
         </p>
+        <p>
+            <form onsubmit="return submitForm();">
+                <button type="submit">Generate Keys</button>
+            </form>
+        </p>
+        <div id="results">
+            <!-- Results will be displayed here -->
+        </div>
     </body>
 </html>

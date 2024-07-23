@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +24,10 @@ func main() {
 
 	server.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
+	})
+
+	server.GET("/wireguard", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "wireguard.html", nil)
 	})
 
 	server.GET("/portscanner", func(c *gin.Context) {
@@ -143,6 +149,21 @@ func main() {
 		c.JSON(http.StatusOK, response)
 	})
 
+	server.POST("/wireconf", func(c *gin.Context) {
+		privateKey, publicKey, err := generateKeys()
+		if err != nil {
+			c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
+		}
+
+		// Prepare JSON response
+		response := gin.H{
+			"pubkey":  publicKey,
+			"privkey": privateKey,
+		}
+
+		c.JSON(http.StatusOK, response)
+	})
+
 	server.Run(":4000")
 }
 
@@ -168,4 +189,24 @@ func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
 	lastIP[3]--
 
 	return firstIP, lastIP
+}
+
+func generateKeys() (string, string, error) {
+	// Generate private key
+	privateKeyCmd := exec.Command("wg", "genkey")
+	privateKeyOut, err := privateKeyCmd.Output()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate private key: %v", err)
+	}
+	privateKey := strings.TrimSpace(string(privateKeyOut))
+
+	// Generate public key from private key
+	publicKeyCmd := exec.Command("sh", "-c", fmt.Sprintf("echo %s | wg pubkey", privateKey))
+	publicKeyOut, err := publicKeyCmd.Output()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate public key: %v", err)
+	}
+	publicKey := strings.TrimSpace(string(publicKeyOut))
+
+	return privateKey, publicKey, nil
 }
