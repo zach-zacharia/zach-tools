@@ -31,8 +31,10 @@
     <script>
         function submitForm() {
             var subnetscanip = document.getElementById("subnetscanip").value;
+            var subnetscansubnet = document.getElementById("subnetscansubnet").value;
             var formData = new FormData();
             formData.append("subnetscanip", subnetscanip);
+            formData.append("subnetscansubnet", subnetscansubnet)
 
             fetch("/scansubnet", {
                 method: "POST",
@@ -127,6 +129,8 @@
                             <form onsubmit="return submitForm();">
                                 <label for="subnetscanip">Enter IP Address:</label>
                                 <input type="text" class="form-control bg-dark border-0" id="subnetscanip" name="subnetscanip">
+                                <label for="subnetscansubnet">Enter Subnet (Optional, otherwise "/24" will be used)</label>
+                                <input type="text" class="form-control bg-dark border-0" id="subnetscansubnet" name="subnetscansubnet">
                                 <button class="btn btn-danger rounded border-0 mt-3" type="submit">Scan Subnets</button>
                             </form>
                         </div>

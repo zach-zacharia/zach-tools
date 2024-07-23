@@ -95,6 +95,7 @@ func main() {
 
 	server.POST("/scansubnet", func(c *gin.Context) {
 		ip := c.PostForm("subnetscanip")
+		subnetMask := c.PostForm("subnetscansubnet")
 
 		if ip == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -103,10 +104,13 @@ func main() {
 			return
 		}
 
-		// Assume a default subnet mask (e.g., /24)
-		subnetMask := "24"
+		if subnetMask == "" {
+			subnetMask = "/24"
+		}
 
-		_, subnet, err := net.ParseCIDR(ip + "/" + subnetMask)
+		// Assume a default subnet mask (e.g., /24)
+
+		_, subnet, err := net.ParseCIDR(ip + subnetMask)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"Error": "Invalid IP address or subnet mask: " + err.Error(),
