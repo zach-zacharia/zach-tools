@@ -2,7 +2,10 @@ module go-webtest
 
 go 1.22.4
 
-require github.com/gin-gonic/gin v1.10.0
+require (
+	github.com/gin-gonic/gin v1.10.0
+	github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730
+)
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
