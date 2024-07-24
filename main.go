@@ -150,7 +150,7 @@ func main() {
 	})
 
 	server.POST("/wireconf", func(c *gin.Context) {
-		privateKey, publicKey, err := generateKeys()
+		privateKey, publicKey, err := keyGen()
 		if err != nil {
 			c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
 		}
@@ -191,7 +191,7 @@ func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
 	return firstIP, lastIP
 }
 
-func generateKeys() (string, string, error) {
+func keyGen() (string, string, error) {
 	// Generate private key
 	privateKeyCmd := exec.Command("wg", "genkey")
 	privateKeyOut, err := privateKeyCmd.Output()
