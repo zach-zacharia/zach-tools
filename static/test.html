@@ -6,7 +6,7 @@
         </title>
         <script>
             function submitForm() {
-                fetch("/wireconf", {
+                fetch("/wirekey", {
                     method: "POST"
                 })
                 .then(response => response.json())
@@ -25,6 +25,28 @@
                 
                 return false; // Prevent default form submission
             }
+
+            function createConfig() {
+                var host = document.getElementById("mikrotikhost").value;
+                var user = document.getElementById("mikrotikuser").value;
+                var pass = document.getElementById("mikrotikpass").value;
+                var formData = new FormData
+                formData.append("mikrotikhost", host)
+                formData.append("mikrotikuser", user)
+                formData.append("mikrotikpass", pass)
+                fetch("/wireconfig", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => respones.json())
+                .then(data => {
+                    var configs = document.getElementById("configresult");
+
+                })
+                .catch(error => {
+                    console.error('Error: ', error);
+                });
+            }
         </script>
     </head>
     <body>
@@ -41,6 +63,17 @@
         </p>
         <div id="results">
             <!-- Results will be displayed here -->
+        </div>
+        <div id="mikrotikdetail">
+            <form onsubmit="return createConfig()">
+                <input type="text" id="mikrotikhost" name="mikrotikhost">
+                <input type="text" id="mikrotikuser" name="mikrotikuser">
+                <input type="text" id="mikrotikpass" name="mikrotikpass">
+                <button type="submit">Create configuration</button>
+            </form>
+        </div>
+        <div id="configresult">
+            <!-- Configuration results should be displayed here -->
         </div>
     </body>
 </html>

@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -149,7 +150,8 @@ func main() {
 		c.JSON(http.StatusOK, response)
 	})
 
-	server.POST("/wireconf", func(c *gin.Context) {
+	server.POST("/wirekey", func(c *gin.Context) {
+		fmt.Println("Generating public and private key pairs for wireguard...")
 		privateKey, publicKey, err := keyGen()
 		if err != nil {
 			c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
@@ -162,6 +164,16 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, response)
+	})
+
+	server.POST("/wireconfig", func(c *gin.Context) {
+		host := c.PostForm("mikrotikhost")
+		// user := c.PostForm("mikrotikuser")
+		// pass := c.PostForm("mikrotikpass")
+		err := validateHost(host)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err})
+		}
 	})
 
 	server.Run(":4000")
@@ -189,6 +201,38 @@ func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
 	lastIP[3]--
 
 	return firstIP, lastIP
+}
+
+func validateHost(host string) error {
+	// Split host into IP and port
+	parts := strings.Split(host, ":")
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid host format: should be 'IP:port'")
+	}
+
+	// Validate IP address
+	ip := parts[0]
+	if ip == "" {
+		return fmt.Errorf("invalid IP address")
+	}
+	if net.ParseIP(ip) == nil {
+		return fmt.Errorf("invalid IP address format")
+	}
+
+	// Validate port number
+	portStr := parts[1]
+	if portStr == "" {
+		return fmt.Errorf("invalid port")
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return fmt.Errorf("invalid port format")
+	}
+	if port < 0 || port > 65535 {
+		return fmt.Errorf("port number out of range (0-65535)")
+	}
+
+	return nil
 }
 
 func keyGen() (string, string, error) {
