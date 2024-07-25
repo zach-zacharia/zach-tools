@@ -150,32 +150,38 @@ func main() {
 		c.JSON(http.StatusOK, response)
 	})
 
-	server.POST("/wirekey", func(c *gin.Context) {
+	// server.POST("/wirekey", func(c *gin.Context) {
+	// 	fmt.Println("Generating public and private key pairs for wireguard...")
+	// 	privateKey, publicKey, err := keyGen()
+	// 	if err != nil {
+	// 		c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
+	// 	}
+
+	// 	// Prepare JSON response
+	// 	response := gin.H{
+	// 		"pubkey":  publicKey,
+	// 		"privkey": privateKey,
+	// 	}
+
+	// 	c.JSON(http.StatusOK, response)
+	// })
+
+	server.POST("/wireconfig", func(c *gin.Context) {
 		fmt.Println("Generating public and private key pairs for wireguard...")
 		privateKey, publicKey, err := keyGen()
 		if err != nil {
 			c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
 		}
-
-		// Prepare JSON response
-		response := gin.H{
-			"pubkey":  publicKey,
-			"privkey": privateKey,
-		}
-
-		c.JSON(http.StatusOK, response)
-	})
-
-	server.POST("/wireconfig", func(c *gin.Context) {
 		host := c.PostForm("mikrotikhost")
-		// user := c.PostForm("mikrotikuser")
-		// pass := c.PostForm("mikrotikpass")
-		err := validateHost(host)
+		user := c.PostForm("mikrotikuser")
+		pass := c.PostForm("mikrotikpass")
+
+		err = validateHost(host)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err})
 		}
+		fmt.Printf("Creating Wireguard configuration files with the following parameters\nPrivate key: %s\nPublic key: %s\nMikrotik's IP: %s\nUsername: %s\nUser Password: %s", privateKey, publicKey, host, user, pass)
 	})
-
 	server.Run(":4000")
 }
 

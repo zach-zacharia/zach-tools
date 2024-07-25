@@ -31,9 +31,10 @@
                 var user = document.getElementById("mikrotikuser").value;
                 var pass = document.getElementById("mikrotikpass").value;
                 var formData = new FormData
-                formData.append("mikrotikhost", host)
-                formData.append("mikrotikuser", user)
-                formData.append("mikrotikpass", pass)
+                formData.append("mikrotikhost", host);
+                formData.append("mikrotikuser", user);
+                formData.append("mikrotikpass", pass);
+
                 fetch("/wireconfig", {
                     method: "POST",
                     body: formData
@@ -41,7 +42,10 @@
                 .then(response => respones.json())
                 .then(data => {
                     var configs = document.getElementById("configresult");
-
+                    configs.innerHTML = `
+                    <h3>Keys</h3>
+                    <p><b>Public key: </b>${data.priv}
+                    `
                 })
                 .catch(error => {
                     console.error('Error: ', error);
@@ -56,20 +60,23 @@
         <p>
             <img src="/img/dreamybull-ambatukam.gif" alt="dreamybull-ambatukam">
         </p>
-        <p>
+        <!-- <p>
             <form onsubmit="return submitForm();">
                 <button type="submit">Generate Keys</button>
             </form>
-        </p>
+        </p> -->
         <div id="results">
             <!-- Results will be displayed here -->
         </div>
-        <div id="mikrotikdetail">
+        <div>
             <form onsubmit="return createConfig()">
+                <label for="mikrotikhost">Mikrotik (Wireguard Server) IP Address</label>
                 <input type="text" id="mikrotikhost" name="mikrotikhost">
+                <label for="mikrotikuser">Mikrotik (Wireguard Server) User</label>
                 <input type="text" id="mikrotikuser" name="mikrotikuser">
+                <label for="mikrotikpass">Mikrotik (Wireguard Server) User Password</label>
                 <input type="text" id="mikrotikpass" name="mikrotikpass">
-                <button type="submit">Create configuration</button>
+                <button type="submit">Create configuration and send to server</button>
             </form>
         </div>
         <div id="configresult">
