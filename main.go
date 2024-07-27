@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/http"
-	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-routeros/routeros"
 )
 
 func main() {
@@ -43,8 +44,12 @@ func main() {
 		c.HTML(http.StatusOK, "webshell.html", nil)
 	})
 
-	server.GET("/ambatukam", func(c *gin.Context) {
+	server.GET("/alpha", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "test.html", nil)
+	})
+
+	server.GET("/beta", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "tester.html", nil)
 	})
 
 	server.POST("/scanport", func(c *gin.Context) {
@@ -150,39 +155,92 @@ func main() {
 		c.JSON(http.StatusOK, response)
 	})
 
-	// server.POST("/wirekey", func(c *gin.Context) {
-	// 	fmt.Println("Generating public and private key pairs for wireguard...")
-	// 	privateKey, publicKey, err := keyGen()
-	// 	if err != nil {
-	// 		c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
-	// 	}
+	server.POST("/mikrologin", func(c *gin.Context) {
+		routerIP := c.PostForm("ip")
+		username := c.PostForm("user")
+		password := c.PostForm("pass")
 
-	// 	// Prepare JSON response
-	// 	response := gin.H{
-	// 		"pubkey":  publicKey,
-	// 		"privkey": privateKey,
-	// 	}
-
-	// 	c.JSON(http.StatusOK, response)
-	// })
-
-	server.POST("/wireconfig", func(c *gin.Context) {
-		fmt.Println("Generating public and private key pairs for wireguard...")
-		privateKey, publicKey, err := keyGen()
+		err := mikrotikLogin(routerIP, username, password)
 		if err != nil {
-			c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
-		host := c.PostForm("mikrotikhost")
-		user := c.PostForm("mikrotikuser")
-		pass := c.PostForm("mikrotikpass")
 
-		err = validateHost(host)
-		if err != nil {
-			c.JSON(500, gin.H{"error": err})
+		response := gin.H{
+			"message": "Successfully logged in",
 		}
-		fmt.Printf("Creating Wireguard configuration files with the following parameters\nPrivate key: %s\nPublic key: %s\nMikrotik's IP: %s\nUsername: %s\nUser Password: %s", privateKey, publicKey, host, user, pass)
+
+		c.JSON(http.StatusOK, response)
 	})
+
+	server.POST("/mikroadduser", func(c *gin.Context) {
+		routerIP := "192.168.56.2"
+		username := "admin"
+		password := ""
+		client, err := routeros.Dial(fmt.Sprintf("%s:8728", routerIP), username, password)
+		if err != nil {
+			log.Fatalf("Failed to connect to router: %v", err)
+		}
+		defer client.Close()
+		user := c.PostForm("user")
+		group := c.PostForm("group")
+		user_password := c.PostForm("pass")
+
+		command := formatCommand("/user/add", "=name=%s", "=group=%s", "=password=%s", user, group, user_password)
+		err = runCommand(client, command)
+		if err != nil {
+			log.Fatalf("Failed to add user: %v", err)
+		}
+		response := gin.H{
+			"message": "Successfully added the user",
+		}
+
+		c.JSON(http.StatusOK, response)
+	})
+
 	server.Run(":4000")
+}
+
+func mikrotikLogin(routerIP, username string, password string) error {
+	// Connect to the router
+	client, err := routeros.Dial(routerIP, username, password)
+	if err != nil {
+		return fmt.Errorf("Failed to connect to router: %v", err)
+	}
+	defer client.Close()
+
+	return nil
+	// Successfully logged in
+}
+
+func formatCommand(command string, args ...interface{}) string {
+	return fmt.Sprintf(command, args...)
+}
+
+func runCommand(client *routeros.Client, command string, args ...string) error {
+	// Construct the command and arguments
+	cmd := []string{command}
+	cmd = append(cmd, args...)
+
+	// Send the command
+	reply, err := client.Run(cmd...)
+	if err != nil {
+		return fmt.Errorf("failed to execute command: %w", err)
+	}
+
+	// Print the response
+	if len(reply.Re) > 0 {
+		fmt.Println("Response from router:")
+		for _, re := range reply.Re {
+			for k, v := range re.Map {
+				fmt.Printf("%s: %s\n", k, v)
+			}
+		}
+	} else {
+		fmt.Println("No response from router")
+	}
+
+	return nil
 }
 
 func CalculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
@@ -239,24 +297,4 @@ func validateHost(host string) error {
 	}
 
 	return nil
-}
-
-func keyGen() (string, string, error) {
-	// Generate private key
-	privateKeyCmd := exec.Command("wg", "genkey")
-	privateKeyOut, err := privateKeyCmd.Output()
-	if err != nil {
-		return "", "", fmt.Errorf("failed to generate private key: %v", err)
-	}
-	privateKey := strings.TrimSpace(string(privateKeyOut))
-
-	// Generate public key from private key
-	publicKeyCmd := exec.Command("sh", "-c", fmt.Sprintf("echo %s | wg pubkey", privateKey))
-	publicKeyOut, err := publicKeyCmd.Output()
-	if err != nil {
-		return "", "", fmt.Errorf("failed to generate public key: %v", err)
-	}
-	publicKey := strings.TrimSpace(string(publicKeyOut))
-
-	return privateKey, publicKey, nil
 }
