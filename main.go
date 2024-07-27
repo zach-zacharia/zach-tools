@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -179,17 +178,16 @@ func main() {
 		password := ""
 		client, err := routeros.Dial(fmt.Sprintf("%s:8728", routerIP), username, password)
 		if err != nil {
-			log.Fatalf("Failed to connect to router: %v", err)
+			fmt.Errorf("Failed to connect to router: %v", err)
 		}
 		defer client.Close()
-		user := c.PostForm("user")
-		group := c.PostForm("group")
-		user_password := c.PostForm("pass")
+		user := fmt.Sprintf("=name=%s", c.PostForm("user"))
+		group := fmt.Sprintf("=group=%s", c.PostForm("group"))
+		user_password := fmt.Sprintf("=password=%s", c.PostForm("pass"))
 
-		command := formatCommand("/user/add", "=name=%s", "=group=%s", "=password=%s", user, group, user_password)
-		err = runCommand(client, command)
+		err = runCommand(client, "/user/add", user, group, user_password)
 		if err != nil {
-			log.Fatalf("Failed to add user: %v", err)
+			fmt.Errorf("Failed to add user: %v", err)
 		}
 		response := gin.H{
 			"message": "Successfully added the user",
@@ -213,9 +211,9 @@ func mikrotikLogin(routerIP, username string, password string) error {
 	// Successfully logged in
 }
 
-func formatCommand(command string, args ...interface{}) string {
-	return fmt.Sprintf(command, args...)
-}
+// func formatCommand(command string, args ...interface{}) string {
+// 	return fmt.Sprintf(command, args...)
+// }
 
 func runCommand(client *routeros.Client, command string, args ...string) error {
 	// Construct the command and arguments
