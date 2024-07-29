@@ -6,8 +6,9 @@
         </title>
         <script>
             function submitForm() {
+                console.log('submitForm function called');
                 var user = document.getElementById("user").value;
-                var group = document.getElementsByName("group").value;
+                var group = document.getElementById("group").value;
                 var pass = document.getElementById("pass").value;
 
                 var input = new FormData();
@@ -20,16 +21,13 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Update DOM with scan results
                     var resultsDiv = document.getElementById("results");
-                    resultsDiv.innerHTML = `
-                        <p>Message: ${data.message}</p>
-                    `;
+                    resultsDiv.innerHTML = `<p>Message: ${data.message}</p>`;
                 })
                 .catch(error => {
                     console.error('Error:', error);
                 });
-                
+
                 return false; // Prevent default form submission
             }
         </script>
@@ -48,17 +46,12 @@
         </p> -->
         <div>
             <h1>MikroTik Router Login</h1>
-            <form onsubmit="return submitForm();" method="post">
+            <form onsubmit="return submitForm();" method="POST">
                 <label for="user">Please enter the user you wish to create:</label><br>
-                <input type="text" id="user" name="user">
+                <input type="text" id="user" name="user"><br>
                 <!-- <label for="groups">Please enter the group of the user you wish to create</label><br> -->
-                <p>Please enter the group of your user</p>
-                <input type="radio" name="group" id="group1" value="read">
-                <label for="group1">read</label><br>
-                <input type="radio" name="group" id="group2" value="write">
-                <label for="group2">write</label><br>
-                <input type="radio" name="group" id="group3" value="full">
-                <label for="group3">full</label><br>
+                <label for="group">Please enter the group for the user:</label><br>
+                <input type="text" id="group" name="group"><br>
                 <label for="pass">Please enter the password for that user:</label><br>
                 <input type="text" id="pass" name="pass"><br>
                 <button type="submit">Log In</button>

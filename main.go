@@ -181,11 +181,12 @@ func main() {
 			fmt.Errorf("Failed to connect to router: %v", err)
 		}
 		defer client.Close()
-		user := fmt.Sprintf("=name=%s", c.PostForm("user"))
-		group := fmt.Sprintf("=group=%s", c.PostForm("group"))
-		user_password := fmt.Sprintf("=password=%s", c.PostForm("pass"))
+		user := c.PostForm("user")
+		group := c.PostForm("group")
+		user_password := c.PostForm("pass")
 
-		err = runCommand(client, "/user/add", user, group, user_password)
+		command := fmt.Sprintf("/user/add =name=%s =group=%s =password=%s", user, group, user_password)
+		_, err = client.RunArgs(strings.Split(command, " "))
 		if err != nil {
 			fmt.Errorf("Failed to add user: %v", err)
 		}
@@ -209,36 +210,6 @@ func mikrotikLogin(routerIP, username string, password string) error {
 
 	return nil
 	// Successfully logged in
-}
-
-// func formatCommand(command string, args ...interface{}) string {
-// 	return fmt.Sprintf(command, args...)
-// }
-
-func runCommand(client *routeros.Client, command string, args ...string) error {
-	// Construct the command and arguments
-	cmd := []string{command}
-	cmd = append(cmd, args...)
-
-	// Send the command
-	reply, err := client.Run(cmd...)
-	if err != nil {
-		return fmt.Errorf("failed to execute command: %w", err)
-	}
-
-	// Print the response
-	if len(reply.Re) > 0 {
-		fmt.Println("Response from router:")
-		for _, re := range reply.Re {
-			for k, v := range re.Map {
-				fmt.Printf("%s: %s\n", k, v)
-			}
-		}
-	} else {
-		fmt.Println("No response from router")
-	}
-
-	return nil
 }
 
 func CalculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
