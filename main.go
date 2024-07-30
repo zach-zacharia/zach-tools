@@ -211,7 +211,7 @@ func main() {
 		mikrotikClientIP := c.PostForm("clientip")
 
 		// serverPublicKey := "WJFWXjyXTzH6irpUBPR4xQ6hOJxmy/ZIF2YgHk09f0w="
-		serverPublicKey := "46V5B3ULxXmRznXh+k8iNtSWyQ8ffSneDGSeg8GuIAE="
+		serverPublicKey := "K/S26Ub03rQ/JOeytxlTkO+VqPIw9A2yYEgFsREgBD8="
 		endpointAddress := "192.168.56.2:13231"
 		allowedIPs := "0.0.0.0/0"
 
@@ -246,13 +246,13 @@ func main() {
 		}
 		fmt.Println("WireGuard client configuration saved to", filePath)
 
-		wgQuickCmd := exec.Command("wg-quick", "up", "wg0")
-		output, err := wgQuickCmd.CombinedOutput()
-		if err != nil {
-			fmt.Errorf("Failed to bring up WireGuard interface:", err)
-			fmt.Println("Output:", string(output))
-			return
-		}
+		// wgQuickCmd := exec.Command("wg-quick", "up", "wg0")
+		// output, err := wgQuickCmd.CombinedOutput()
+		// if err != nil {
+		// 	fmt.Errorf("Failed to bring up WireGuard interface:", err)
+		// 	fmt.Println("Output:", string(output))
+		// 	return
+		// }
 		response := gin.H{
 			"message": "Successfully added the peer to the WireGuard interface",
 		}
