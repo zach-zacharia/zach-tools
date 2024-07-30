@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strconv"
+	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -197,6 +198,68 @@ func main() {
 		c.JSON(http.StatusOK, response)
 	})
 
+	server.POST("/mikrowire", func(c *gin.Context) {
+		privateKey, publicKey, err := generateKeys()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		mikrotikIP := c.PostForm("ip")
+		mikrotikUser := c.PostForm("user")
+		mikrotikPass := c.PostForm("pass")
+		mikrotikClientIP := c.PostForm("clientip")
+
+		// serverPublicKey := "WJFWXjyXTzH6irpUBPR4xQ6hOJxmy/ZIF2YgHk09f0w="
+		serverPublicKey := "46V5B3ULxXmRznXh+k8iNtSWyQ8ffSneDGSeg8GuIAE="
+		endpointAddress := "192.168.56.2:13231"
+		allowedIPs := "0.0.0.0/0"
+
+		client, err := routeros.Dial(mikrotikIP, mikrotikUser, mikrotikPass)
+		if err != nil {
+			fmt.Println("Failed to connect to MikroTik:", err)
+			return
+		}
+		defer client.Close()
+
+		cmd := []string{
+			"/interface/wireguard/peers/add",
+			"=interface=wg0",
+			fmt.Sprintf("=public-key=%s", publicKey),
+			fmt.Sprintf("=endpoint-address=%s", strings.Split(endpointAddress, ":")[0]),
+			fmt.Sprintf("=endpoint-port=%s", strings.Split(endpointAddress, ":")[1]),
+			fmt.Sprintf("=allowed-address=%s", allowedIPs),
+		}
+
+		_, err = client.RunArgs(cmd)
+		if err != nil {
+			fmt.Println("Failed to add WireGuard peer:", err)
+			return
+		}
+
+		clientConfig := createClientConfig(privateKey, serverPublicKey, endpointAddress, allowedIPs, mikrotikClientIP)
+		filePath := "./wireconf/wg0.conf" // Ganti dengan path yang diinginkan
+		err = saveConfigToFile(clientConfig, filePath)
+		if err != nil {
+			fmt.Println("Failed to save config to file:", err)
+			return
+		}
+		fmt.Println("WireGuard client configuration saved to", filePath)
+
+		wgQuickCmd := exec.Command("wg-quick", "up", "wg0")
+		output, err := wgQuickCmd.CombinedOutput()
+		if err != nil {
+			fmt.Errorf("Failed to bring up WireGuard interface:", err)
+			fmt.Println("Output:", string(output))
+			return
+		}
+		response := gin.H{
+			"message": "Successfully added the peer to the WireGuard interface",
+		}
+
+		c.JSON(http.StatusOK, response)
+	})
+
 	server.Run(":4000")
 }
 
@@ -236,33 +299,41 @@ func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
 	return firstIP, lastIP
 }
 
-func validateHost(host string) error {
-	// Split host into IP and port
-	parts := strings.Split(host, ":")
-	if len(parts) != 2 {
-		return fmt.Errorf("invalid host format: should be 'IP:port'")
-	}
-
-	// Validate IP address
-	ip := parts[0]
-	if ip == "" {
-		return fmt.Errorf("invalid IP address")
-	}
-	if net.ParseIP(ip) == nil {
-		return fmt.Errorf("invalid IP address format")
-	}
-
-	// Validate port number
-	portStr := parts[1]
-	if portStr == "" {
-		return fmt.Errorf("invalid port")
-	}
-	port, err := strconv.Atoi(portStr)
+func generateKeys() (string, string, error) {
+	// Generate private key
+	privateKeyCmd := exec.Command("wg", "genkey")
+	privateKeyOut, err := privateKeyCmd.Output()
 	if err != nil {
-		return fmt.Errorf("invalid port format")
+		return "", "", fmt.Errorf("failed to generate private key: %v", err)
 	}
-	if port < 0 || port > 65535 {
-		return fmt.Errorf("port number out of range (0-65535)")
+	privateKey := strings.TrimSpace(string(privateKeyOut))
+
+	// Generate public key from private key
+	publicKeyCmd := exec.Command("sh", "-c", fmt.Sprintf("echo %s | wg pubkey", privateKey))
+	publicKeyOut, err := publicKeyCmd.Output()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate public key: %v", err)
+	}
+	publicKey := strings.TrimSpace(string(publicKeyOut))
+
+	return privateKey, publicKey, nil
+}
+
+func createClientConfig(privateKey, publicKey, endpoint, allowedIPs, clientIP string) string {
+	config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = %s\nEndpoint = %s\nAllowedIPs = %s\nPersistentKeepalive = 25", privateKey, clientIP, publicKey, endpoint, allowedIPs)
+	return config
+}
+
+func saveConfigToFile(config, filePath string) error {
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %v", err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(config)
+	if err != nil {
+		return fmt.Errorf("failed to write to file: %v", err)
 	}
 
 	return nil

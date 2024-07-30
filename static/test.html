@@ -5,29 +5,33 @@
             Test Page
         </title>
         <script>
-            function submitForm() {
-                console.log('submitForm function called');
+            function wireguard() {
+                var ip = document.getElementById("ip").value;
                 var user = document.getElementById("user").value;
-                var group = document.getElementById("group").value;
                 var pass = document.getElementById("pass").value;
-
+                var clientip = document.getElementById("clientip").value;
+                
                 var input = new FormData();
+                input.append("ip", ip);
                 input.append("user", user);
-                input.append("group", group);
                 input.append("pass", pass);
-                fetch("/mikroadduser", {
+                input.append("clientip", clientip);
+                fetch("/mikrowire", {
                     method: "POST",
                     body: input
                 })
                 .then(response => response.json())
                 .then(data => {
+                    // Update DOM with scan results
                     var resultsDiv = document.getElementById("results");
-                    resultsDiv.innerHTML = `<p>Message: ${data.message}</p>`;
+                    resultsDiv.innerHTML = `
+                        <p>Message: ${data.message}</p>
+                    `;
                 })
                 .catch(error => {
                     console.error('Error:', error);
                 });
-
+                    
                 return false; // Prevent default form submission
             }
         </script>
@@ -44,17 +48,18 @@
                 <button type="submit">Generate Keys</button>
             </form>
         </p> -->
-        <div>
-            <h1>MikroTik Router Login</h1>
-            <form onsubmit="return submitForm();" method="POST">
-                <label for="user">Please enter the user you wish to create:</label><br>
-                <input type="text" id="user" name="user"><br>
-                <!-- <label for="groups">Please enter the group of the user you wish to create</label><br> -->
-                <label for="group">Please enter the group for the user:</label><br>
-                <input type="text" id="group" name="group"><br>
-                <label for="pass">Please enter the password for that user:</label><br>
-                <input type="text" id="pass" name="pass"><br>
-                <button type="submit">Log In</button>
+        <div >
+            <h1>MikroTik Router Add Wireguard</h1>
+            <form onsubmit="return wireguard();">
+                <label for="ip">Enter IP Address:</label><br>
+                <input type="text" class="form-control bg-dark border-0" id="ip" name="ip"><br>
+                <label for="user">Enter Username:</label><br>
+                <input type="text" class="form-control bg-dark border-0" id="user" name="user"><br>
+                <label for="pass">Enter Password:</label><br>
+                <input type="text" class="form-control bg-dark border-0" id="pass" name="pass"><br>
+                <label for="clientip">Enter Client IP:</label><br>
+                <input type="text" class="form-control bg-dark border-0" id="clientip" name="clientip"><br>
+                <button class="btn btn-danger rounded border-0 mt-3" type="submit">Test!</button>
             </form>
         </div>
         <div id="results">
