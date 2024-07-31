@@ -210,9 +210,15 @@ func main() {
 		mikrotikPass := c.PostForm("pass")
 		mikrotikClientIP := c.PostForm("clientip")
 
+<<<<<<< HEAD
 		serverPublicKey := "WJFWXjyXTzH6irpUBPR4xQ6hOJxmy/ZIF2YgHk09f0w="
 		// serverPublicKey := "K/S26Ub03rQ/JOeytxlTkO+VqPIw9A2yYEgFsREgBD8="
 		endpointAddress := "172.16.13.1:13231"
+=======
+		// serverPublicKey := "WJFWXjyXTzH6irpUBPR4xQ6hOJxmy/ZIF2YgHk09f0w="
+		serverPublicKey := "K/S26Ub03rQ/JOeytxlTkO+VqPIw9A2yYEgFsREgBD8="
+		endpointAddress := "192.168.56.2:13231"
+>>>>>>> a067124271ed4e430ec5ad26c5c0d24f69c700e9
 		allowedIPs := "0.0.0.0/0"
 
 		client, err := routeros.Dial(mikrotikIP, mikrotikUser, mikrotikPass)
