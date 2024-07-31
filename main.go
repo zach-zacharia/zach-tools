@@ -44,6 +44,10 @@ func main() {
 		c.HTML(http.StatusOK, "webshell.html", nil)
 	})
 
+	server.GET("/mikrotools", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "mikrotik.html", nil)
+	})
+
 	server.GET("/alpha", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "test.html", nil)
 	})
