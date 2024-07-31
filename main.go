@@ -253,11 +253,29 @@ func main() {
 		// 	fmt.Println("Output:", string(output))
 		// 	return
 		// }
+
 		response := gin.H{
 			"message": "Successfully added the peer to the WireGuard interface",
 		}
 
 		c.JSON(http.StatusOK, response)
+	})
+
+	server.GET("/downloadconf", func(c *gin.Context) {
+		filename := "./wireconf/wg0.conf"
+
+		_, err := os.Stat(filename)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "File not found",
+			})
+			return
+		}
+		c.Header("Content-Description", "File Transfer")
+		c.Header("Content-Transfer-Encoding", "binary")
+		c.Header("Content-Disposition", "attachment; filename="+filename)
+
+		c.File(filename)
 	})
 
 	server.Run(":4000")
