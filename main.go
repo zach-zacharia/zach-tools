@@ -210,7 +210,7 @@ func main() {
 		mikrotikPass := c.PostForm("pass")
 		mikrotikClientIP := c.PostForm("clientip")
 
-		serverPublicKey := "WJFWXjyXTzH6irpUBPR4xQ6hOJxmy/ZIF2YgHk09f0w="
+		serverPublicKey := "BBRthl2qzO7gI4A08xfasXVjdg7Qk1IHFcV+zrqATlU="
 		// serverPublicKey := "K/S26Ub03rQ/JOeytxlTkO+VqPIw9A2yYEgFsREgBD8="
 		endpointAddress := "172.16.13.1:13231"
 		allowedIPs := "0.0.0.0/0"
