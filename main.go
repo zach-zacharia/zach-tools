@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-routeros/routeros"
 )
 
 func main() {
@@ -43,8 +44,12 @@ func main() {
 		c.HTML(http.StatusOK, "webshell.html", nil)
 	})
 
-	server.GET("/ambatukam", func(c *gin.Context) {
+	server.GET("/alpha", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "test.html", nil)
+	})
+
+	server.GET("/beta", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "tester.html", nil)
 	})
 
 	server.POST("/scanport", func(c *gin.Context) {
@@ -150,39 +155,142 @@ func main() {
 		c.JSON(http.StatusOK, response)
 	})
 
-	// server.POST("/wirekey", func(c *gin.Context) {
-	// 	fmt.Println("Generating public and private key pairs for wireguard...")
-	// 	privateKey, publicKey, err := keyGen()
-	// 	if err != nil {
-	// 		c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
-	// 	}
+	server.POST("/mikrologin", func(c *gin.Context) {
+		routerIP := c.PostForm("ip")
+		username := c.PostForm("user")
+		password := c.PostForm("pass")
 
-	// 	// Prepare JSON response
-	// 	response := gin.H{
-	// 		"pubkey":  publicKey,
-	// 		"privkey": privateKey,
-	// 	}
-
-	// 	c.JSON(http.StatusOK, response)
-	// })
-
-	server.POST("/wireconfig", func(c *gin.Context) {
-		fmt.Println("Generating public and private key pairs for wireguard...")
-		privateKey, publicKey, err := keyGen()
+		err := mikrotikLogin(routerIP, username, password)
 		if err != nil {
-			c.JSON(500, gin.H{"error": fmt.Sprintf("Failed to generate keys: %v", err)})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
-		host := c.PostForm("mikrotikhost")
-		user := c.PostForm("mikrotikuser")
-		pass := c.PostForm("mikrotikpass")
 
-		err = validateHost(host)
-		if err != nil {
-			c.JSON(500, gin.H{"error": err})
+		response := gin.H{
+			"message": "Successfully logged in",
 		}
-		fmt.Printf("Creating Wireguard configuration files with the following parameters\nPrivate key: %s\nPublic key: %s\nMikrotik's IP: %s\nUsername: %s\nUser Password: %s", privateKey, publicKey, host, user, pass)
+
+		c.JSON(http.StatusOK, response)
 	})
+
+	server.POST("/mikroadduser", func(c *gin.Context) {
+		routerIP := "192.168.56.2"
+		username := "admin"
+		password := ""
+		client, err := routeros.Dial(fmt.Sprintf("%s:8728", routerIP), username, password)
+		if err != nil {
+			fmt.Errorf("Failed to connect to router: %v", err)
+		}
+		defer client.Close()
+		user := c.PostForm("user")
+		group := c.PostForm("group")
+		user_password := c.PostForm("pass")
+
+		command := fmt.Sprintf("/user/add =name=%s =group=%s =password=%s", user, group, user_password)
+		_, err = client.RunArgs(strings.Split(command, " "))
+		if err != nil {
+			fmt.Errorf("Failed to add user: %v", err)
+		}
+		response := gin.H{
+			"message": "Successfully added the user",
+		}
+
+		c.JSON(http.StatusOK, response)
+	})
+
+	server.POST("/mikrowire", func(c *gin.Context) {
+		privateKey, publicKey, err := generateKeys()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		mikrotikIP := c.PostForm("ip")
+		mikrotikUser := c.PostForm("user")
+		mikrotikPass := c.PostForm("pass")
+		mikrotikClientIP := c.PostForm("clientip")
+
+		// serverPublicKey := "WJFWXjyXTzH6irpUBPR4xQ6hOJxmy/ZIF2YgHk09f0w="
+		serverPublicKey := "K/S26Ub03rQ/JOeytxlTkO+VqPIw9A2yYEgFsREgBD8="
+		endpointAddress := "192.168.56.2:13231"
+		allowedIPs := "0.0.0.0/0"
+
+		client, err := routeros.Dial(mikrotikIP, mikrotikUser, mikrotikPass)
+		if err != nil {
+			fmt.Println("Failed to connect to MikroTik:", err)
+			return
+		}
+		defer client.Close()
+
+		cmd := []string{
+			"/interface/wireguard/peers/add",
+			"=interface=wg0",
+			fmt.Sprintf("=public-key=%s", publicKey),
+			fmt.Sprintf("=endpoint-address=%s", strings.Split(endpointAddress, ":")[0]),
+			fmt.Sprintf("=endpoint-port=%s", strings.Split(endpointAddress, ":")[1]),
+			fmt.Sprintf("=allowed-address=%s", allowedIPs),
+		}
+
+		_, err = client.RunArgs(cmd)
+		if err != nil {
+			fmt.Println("Failed to add WireGuard peer:", err)
+			return
+		}
+
+		clientConfig := createClientConfig(privateKey, serverPublicKey, endpointAddress, allowedIPs, mikrotikClientIP)
+		filePath := "./wireconf/wg0.conf" // Ganti dengan path yang diinginkan
+		err = saveConfigToFile(clientConfig, filePath)
+		if err != nil {
+			fmt.Println("Failed to save config to file:", err)
+			return
+		}
+		fmt.Println("WireGuard client configuration saved to", filePath)
+
+		// wgQuickCmd := exec.Command("wg-quick", "up", "wg0")
+		// output, err := wgQuickCmd.CombinedOutput()
+		// if err != nil {
+		// 	fmt.Errorf("Failed to bring up WireGuard interface:", err)
+		// 	fmt.Println("Output:", string(output))
+		// 	return
+		// }
+
+		response := gin.H{
+			"message": "Successfully added the peer to the WireGuard interface",
+		}
+
+		c.JSON(http.StatusOK, response)
+	})
+
+	server.GET("/downloadconf", func(c *gin.Context) {
+		filename := "./wireconf/wg0.conf"
+
+		_, err := os.Stat(filename)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "File not found",
+			})
+			return
+		}
+		c.Header("Content-Description", "File Transfer")
+		c.Header("Content-Transfer-Encoding", "binary")
+		c.Header("Content-Disposition", "attachment; filename="+filename)
+
+		c.File(filename)
+	})
+
 	server.Run(":4000")
+}
+
+func mikrotikLogin(routerIP, username string, password string) error {
+	// Connect to the router
+	client, err := routeros.Dial(routerIP, username, password)
+	if err != nil {
+		return fmt.Errorf("Failed to connect to router: %v", err)
+	}
+	defer client.Close()
+
+	return nil
+	// Successfully logged in
 }
 
 func CalculateBroadcastAddress(network net.IP, subnetMask net.IPMask) net.IP {
@@ -209,39 +317,7 @@ func CalculateFirstLastIP(network, broadcast net.IP) (firstIP, lastIP net.IP) {
 	return firstIP, lastIP
 }
 
-func validateHost(host string) error {
-	// Split host into IP and port
-	parts := strings.Split(host, ":")
-	if len(parts) != 2 {
-		return fmt.Errorf("invalid host format: should be 'IP:port'")
-	}
-
-	// Validate IP address
-	ip := parts[0]
-	if ip == "" {
-		return fmt.Errorf("invalid IP address")
-	}
-	if net.ParseIP(ip) == nil {
-		return fmt.Errorf("invalid IP address format")
-	}
-
-	// Validate port number
-	portStr := parts[1]
-	if portStr == "" {
-		return fmt.Errorf("invalid port")
-	}
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		return fmt.Errorf("invalid port format")
-	}
-	if port < 0 || port > 65535 {
-		return fmt.Errorf("port number out of range (0-65535)")
-	}
-
-	return nil
-}
-
-func keyGen() (string, string, error) {
+func generateKeys() (string, string, error) {
 	// Generate private key
 	privateKeyCmd := exec.Command("wg", "genkey")
 	privateKeyOut, err := privateKeyCmd.Output()
@@ -259,4 +335,24 @@ func keyGen() (string, string, error) {
 	publicKey := strings.TrimSpace(string(publicKeyOut))
 
 	return privateKey, publicKey, nil
+}
+
+func createClientConfig(privateKey, publicKey, endpoint, allowedIPs, clientIP string) string {
+	config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = %s\nEndpoint = %s\nAllowedIPs = %s\nPersistentKeepalive = 25", privateKey, clientIP, publicKey, endpoint, allowedIPs)
+	return config
+}
+
+func saveConfigToFile(config, filePath string) error {
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %v", err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(config)
+	if err != nil {
+		return fmt.Errorf("failed to write to file: %v", err)
+	}
+
+	return nil
 }
