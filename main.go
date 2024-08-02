@@ -181,23 +181,27 @@ func main() {
 		routerIP := "172.16.13.1"
 		username := "admin"
 		password := ""
-		client, err := routeros.Dial(fmt.Sprintf("%s:8728", routerIP), username, password)
-		if err != nil {
-			fmt.Errorf("Failed to connect to router: %v", err)
-		}
-		defer client.Close()
+
 		user := c.PostForm("user")
 		group := c.PostForm("group")
 		user_password := c.PostForm("pass")
 
-		command := fmt.Sprintf("/user/add =name=%s =group=%s =password=%s", user, group, user_password)
-		_, err = client.RunArgs(strings.Split(command, " "))
+		client, err := routeros.Dial(fmt.Sprintf("%s:8728", routerIP), username, password)
+		if err != nil {
+			fmt.Errorf("Failed to connect to router: %v", err)
+		}
+
+		fmt.Printf("USER:%s\nGROUP:%s\nPASSWORD:%s\n", user, group, user_password)
+
+		args := []string{"/user/add", fmt.Sprintf("=name=%s", user), fmt.Sprintf("=group=%s", group), fmt.Sprintf("=password=%s", user_password)}
+		_, err = client.RunArgs(args)
 		if err != nil {
 			fmt.Errorf("Failed to add user: %v", err)
 		}
 		response := gin.H{
 			"message": "Successfully added the user",
 		}
+		defer client.Close()
 
 		c.JSON(http.StatusOK, response)
 	})

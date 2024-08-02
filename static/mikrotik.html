@@ -87,9 +87,9 @@
         }
         function addUserMikrotik() {
             console.log('submitForm function called');
-            var user = document.getElementById("user").value;
+            var user = document.getElementsByClassName("mikrotikuser")[0].value;
             var group = document.getElementById("group").value;
-            var pass = document.getElementById("pass").value;
+            var pass = document.getElementsByClassName("userpass")[0].value;
 
             var input = new FormData();
             input.append("user", user);
@@ -136,7 +136,7 @@
                         <a href="#" class="nav-link dropdown-toggle active" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Tools</a>
                         <div class="dropdown-menu bg-transparent border-0">
                             <a href="/portscanner" class="dropdown-item">Port Scanning</a>
-                            <a href="/subnetscanner" class="dropdown-item active">Subnet Scanning</a>
+                            <a href="/subnetscanner" class="dropdown-item">Subnet Scanning</a>
                             <a href="#" class="dropdown-item active">MikroTools</a>
                         </div>
                     </div>
@@ -185,18 +185,18 @@
                                 <input type="text" class="form-control bg-dark border-0" id="user" name="user">
                                 <label for="pass">Enter Password:</label>
                                 <input type="text" class="form-control bg-dark border-0" id="pass" name="pass">
-                                <button class="btn btn-danger rounded border-0 mt-3" type="submit">Scan Subnets</button>
+                                <button class="btn btn-danger rounded border-0 mt-3" type="submit">Attempt Login</button>
                             </form>
                         </div>
                         <div class="bg-secondary rounded p-4 align-items-center">
                             <h1>MikroTik Router Add User</h1>
-                            <form onsubmit="return addUserMikrotik();" method="POST">
+                            <form onsubmit="return addUserMikrotik();">
                                 <label for="user">Please enter the user you wish to create:</label><br>
-                                <input type="text" class="form-control bg-dark border-0" id="user" name="user"><br>
+                                <input type="text" class="form-control bg-dark border-0 mikrotikuser" id="user" name="user"><br>
                                 <label for="group">Please enter the group for the user:</label><br>
                                 <input type="text" class="form-control bg-dark border-0" id="group" name="group"><br>
                                 <label for="pass">Please enter the password for that user:</label><br>
-                                <input type="text" class="form-control bg-dark border-0" id="pass" name="pass">
+                                <input type="text" class="form-control bg-dark border-0 userpass" id="pass" name="pass">
                                 <button class="btn btn-danger rounded border-0 mt-3" type="submit">Add User</button>
                             </form>
                         </div>
