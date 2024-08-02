@@ -178,7 +178,7 @@ func main() {
 	})
 
 	server.POST("/mikroadduser", func(c *gin.Context) {
-		routerIP := "192.168.56.2"
+		routerIP := "172.16.13.1"
 		username := "admin"
 		password := ""
 		client, err := routeros.Dial(fmt.Sprintf("%s:8728", routerIP), username, password)
@@ -217,7 +217,7 @@ func main() {
 		serverPublicKey := "BBRthl2qzO7gI4A08xfasXVjdg7Qk1IHFcV+zrqATlU="
 		// serverPublicKey := "K/S26Ub03rQ/JOeytxlTkO+VqPIw9A2yYEgFsREgBD8="
 		endpointAddress := "172.16.13.1:13231"
-		allowedIPs := "0.0.0.0/0"
+		allowedIPs := mikrotikClientIP
 
 		client, err := routeros.Dial(mikrotikIP, mikrotikUser, mikrotikPass)
 		if err != nil {
@@ -277,7 +277,7 @@ func main() {
 		}
 		c.Header("Content-Description", "File Transfer")
 		c.Header("Content-Transfer-Encoding", "binary")
-		c.Header("Content-Disposition", "attachment; filename="+filename)
+		c.Header("Content-Disposition", "attachment; filename=wg0.conf")
 
 		c.File(filename)
 	})
